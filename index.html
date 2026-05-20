@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>셀러마진 수첩</title>
+    <meta
+      name="description"
+      content="스마트스토어, 쿠팡, 오픈마켓 셀러를 위한 판매가·수수료·배송비·광고비 순이익 계산기."
+    />
+    <meta name="theme-color" content="#1d2a25" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="셀러마진 수첩" />
+    <meta
+      property="og:description"
+      content="판매가에서 수수료, 배송비, 광고비, 반품비를 빼고 실제로 남는 돈을 계산하세요."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">셀러마진 수첩</p>
+        <h1>판매가에서 진짜 남는 돈 계산</h1>
+      </div>
+      <div class="header-actions" aria-label="작업">
+        <button class="button secondary" type="button" id="sampleButton">예시 불러오기</button>
+        <button class="button secondary" type="button" id="exportButton">CSV 내보내기</button>
+        <button class="button primary" type="button" id="printButton">인쇄</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel input-panel" aria-labelledby="inputTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">상품 계산</p>
+            <h2 id="inputTitle">숫자 입력</h2>
+          </div>
+          <div class="inline-actions">
+            <button class="button ghost danger" type="button" id="deleteButton">삭제</button>
+            <button class="button ghost" type="button" id="resetButton">새 계산</button>
+          </div>
+        </div>
+
+        <form id="marginForm" class="form">
+          <input type="hidden" id="productId" name="productId" />
+
+          <label>
+            상품명
+            <input id="productName" name="productName" required autocomplete="off" />
+          </label>
+
+          <div class="field-grid two">
+            <label>
+              판매 채널
+              <select id="channel" name="channel">
+                <option value="smartstore">스마트스토어</option>
+                <option value="coupang">쿠팡</option>
+                <option value="openmarket">오픈마켓</option>
+                <option value="sns">SNS·직접판매</option>
+                <option value="custom">직접 입력</option>
+              </select>
+            </label>
+            <label>
+              월 예상 판매수
+              <input id="monthlySales" name="monthlySales" type="number" min="0" step="1" />
+            </label>
+          </div>
+
+          <div class="field-grid two">
+            <label>
+              판매가
+              <input id="salePrice" name="salePrice" type="number" min="0" step="10" required />
+            </label>
+            <label>
+              매입·제조 원가
+              <input id="costPrice" name="costPrice" type="number" min="0" step="10" required />
+            </label>
+          </div>
+
+          <div class="field-grid three">
+            <label>
+              플랫폼 수수료 %
+              <input id="platformFeeRate" name="platformFeeRate" type="number" min="0" step="0.1" />
+            </label>
+            <label>
+              결제 수수료 %
+              <input id="paymentFeeRate" name="paymentFeeRate" type="number" min="0" step="0.1" />
+            </label>
+            <label>
+              광고비
+              <input id="adCost" name="adCost" type="number" min="0" step="10" />
+            </label>
+          </div>
+
+          <div class="field-grid three">
+            <label>
+              고객 배송비
+              <input id="shippingIncome" name="shippingIncome" type="number" min="0" step="10" />
+            </label>
+            <label>
+              실제 배송비
+              <input id="shippingCost" name="shippingCost" type="number" min="0" step="10" />
+            </label>
+            <label>
+              포장비
+              <input id="packagingCost" name="packagingCost" type="number" min="0" step="10" />
+            </label>
+          </div>
+
+          <div class="field-grid three">
+            <label>
+              반품률 %
+              <input id="returnRate" name="returnRate" type="number" min="0" max="100" step="0.1" />
+            </label>
+            <label>
+              반품 1건 손실
+              <input id="returnLoss" name="returnLoss" type="number" min="0" step="10" />
+            </label>
+            <label>
+              목표 마진 %
+              <input id="targetMarginRate" name="targetMarginRate" type="number" min="0" max="95" step="0.5" />
+            </label>
+          </div>
+
+          <div class="field-grid two">
+            <label>
+              부가세 처리
+              <select id="vatMode" name="vatMode">
+                <option value="included">판매가에 부가세 포함</option>
+                <option value="excluded">부가세 별도·간이 계산 제외</option>
+              </select>
+            </label>
+            <label>
+              월 고정비
+              <input id="monthlyFixedCost" name="monthlyFixedCost" type="number" min="0" step="1000" />
+            </label>
+          </div>
+
+          <label>
+            메모
+            <textarea id="memo" name="memo" rows="3"></textarea>
+          </label>
+
+          <button class="button primary full" type="submit">계산 저장</button>
+        </form>
+      </section>
+
+      <section class="panel result-panel" aria-labelledby="resultTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">판단</p>
+            <h2 id="resultTitle">결과</h2>
+          </div>
+          <span class="status-pill" id="statusPill">대기</span>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid" aria-live="polite"></div>
+
+        <div class="decision-box" id="decisionBox"></div>
+
+        <div class="price-lab" aria-labelledby="priceLabTitle">
+          <div>
+            <p class="eyebrow">가격 실험</p>
+            <h3 id="priceLabTitle">목표 마진 가격</h3>
+          </div>
+          <div class="price-row">
+            <span>현재 판매가</span>
+            <strong id="currentPriceText">0원</strong>
+          </div>
+          <div class="price-row">
+            <span>손익분기 판매가</span>
+            <strong id="breakEvenPriceText">0원</strong>
+          </div>
+          <div class="price-row accent">
+            <span>목표 마진 판매가</span>
+            <strong id="targetPriceText">0원</strong>
+          </div>
+        </div>
+
+        <div class="chart-card" aria-labelledby="costChartTitle">
+          <div class="section-title compact">
+            <div>
+              <p class="eyebrow">원가 구조</p>
+              <h3 id="costChartTitle">한 개 팔 때 빠지는 돈</h3>
+            </div>
+          </div>
+          <div id="costBars" class="cost-bars"></div>
+        </div>
+      </section>
+
+      <section class="panel list-panel" aria-labelledby="listTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">저장 목록</p>
+            <h2 id="listTitle">상품 비교</h2>
+          </div>
+          <label class="sort-control">
+            정렬
+            <select id="sortMode">
+              <option value="marginAsc">마진 낮은 순</option>
+              <option value="profitDesc">이익 높은 순</option>
+              <option value="nameAsc">이름순</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">상품</th>
+                <th scope="col">판매가</th>
+                <th scope="col">순이익</th>
+                <th scope="col">마진</th>
+                <th scope="col">월 예상</th>
+              </tr>
+            </thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="emptyState">아직 저장된 상품이 없습니다. 예시를 불러오거나 첫 상품을 계산하세요.</p>
+      </section>
+    </main>
+
+    <aside class="panel note-panel" aria-labelledby="noteTitle">
+      <h2 id="noteTitle">수수료 주의</h2>
+      <p>
+        채널 수수료는 상품군, 정산 방식, 프로모션, 계약 조건에 따라 달라집니다.
+        이 도구의 채널값은 시작점입니다. 실제 정산 화면의 숫자로 바꿔서 계산하세요.
+      </p>
+    </aside>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
