@@ -2,11 +2,11 @@
 
 사용량 한도나 중단 후 재개 시 여기서 시작.
 
-1. `index.html` 브라우저 실행 확인.
+1. 공개 주소 확인: `https://neo-byun.github.io/seller-margin-note/`
 2. 예시 불러오기 클릭.
 3. 상품 저장, 삭제, CSV 내보내기 확인.
 4. 반응형 화면 확인.
-5. `gh auth login -h github.com` 후 `.\deploy-github-pages.ps1` 실행.
+5. 커뮤니티 공유용 짧은 글 작성.
 
 현재 결정:
 

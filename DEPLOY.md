@@ -5,11 +5,17 @@
 - 앱은 정적 파일만 사용.
 - 빌드 과정 없음.
 - `index.html`을 그대로 배포하면 됨.
-- GitHub CLI 로그인 토큰이 만료되어 자동 배포는 아직 불가.
+- GitHub Pages 배포 완료.
+
+공개 주소:
+
+```text
+https://neo-byun.github.io/seller-margin-note/
+```
 
 ## GitHub Pages 배포
 
-1. GitHub CLI 재로그인.
+1. GitHub CLI 로그인 확인.
 
 ```powershell
 gh auth login -h github.com

@@ -12,7 +12,11 @@
 
 정적 파일만 사용하므로 GitHub Pages, Netlify, Cloudflare Pages 어디든 올릴 수 있음.
 
-현재 GitHub CLI 토큰이 만료되어 자동 배포는 중단됨. 절차는 `DEPLOY.md`에 정리.
+현재 GitHub Pages 배포 완료.
+
+```text
+https://neo-byun.github.io/seller-margin-note/
+```
 
 ## 기능
 

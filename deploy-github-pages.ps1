@@ -9,54 +9,75 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
   throw "GitHub CLI(gh)가 필요합니다."
 }
 
-gh auth status | Out-Null
+$RepoRoot = (Get-Location).Path
+$SafeDirectory = $RepoRoot.Replace("\", "/")
+
+function Invoke-Git {
+  & git -c "safe.directory=$SafeDirectory" @args
+  if ($LASTEXITCODE -ne 0) {
+    throw "git $($args -join ' ') 실패"
+  }
+}
+
+function Invoke-Gh {
+  & gh @args
+  if ($LASTEXITCODE -ne 0) {
+    throw "gh $($args -join ' ') 실패"
+  }
+}
+
+Invoke-Gh auth status | Out-Null
 
 if (-not (Test-Path -LiteralPath ".git")) {
-  git init -b main
+  Invoke-Git init -b main
 }
 
-git add .
+Invoke-Git add .
 
-$changes = git status --porcelain
+$changes = & git -c "safe.directory=$SafeDirectory" status --porcelain
+if ($LASTEXITCODE -ne 0) {
+  throw "git status 실패"
+}
 if ($changes) {
-  git commit -m $CommitMessage
+  Invoke-Git commit -m $CommitMessage
 }
 
-$owner = gh api user --jq ".login"
+$owner = (& gh api user --jq ".login").Trim()
+if ($LASTEXITCODE -ne 0 -or -not $owner) {
+  throw "GitHub 사용자 확인 실패"
+}
+
 $repoExists = $true
 try {
-  gh repo view "$owner/$RepoName" | Out-Null
+  Invoke-Gh repo view "$owner/$RepoName" | Out-Null
 } catch {
   $repoExists = $false
 }
 
 if (-not $repoExists) {
-  gh repo create $RepoName --public --source . --remote origin --push
-} else {
-  $remoteUrl = "https://github.com/$owner/$RepoName.git"
-  $hasOrigin = $true
-  try {
-    git remote get-url origin | Out-Null
-  } catch {
-    $hasOrigin = $false
-  }
-
-  if (-not $hasOrigin) {
-    git remote add origin $remoteUrl
-  }
-
-  git push -u origin main
+  Invoke-Gh repo create $RepoName --public --description "Korean seller margin calculator" | Out-Null
 }
+
+$remoteUrl = "https://github.com/$owner/$RepoName.git"
+$originUrl = & git -c "safe.directory=$SafeDirectory" remote get-url origin 2>$null
+
+if ($LASTEXITCODE -ne 0) {
+  Invoke-Git remote add origin $remoteUrl
+} elseif ($originUrl.Trim() -ne $remoteUrl) {
+  Invoke-Git remote set-url origin $remoteUrl
+}
+
+Invoke-Git push -u origin main
 
 $pagesExists = $true
 try {
-  gh api "repos/$owner/$RepoName/pages" | Out-Null
+  Invoke-Gh api "repos/$owner/$RepoName/pages" | Out-Null
 } catch {
   $pagesExists = $false
 }
 
 if (-not $pagesExists) {
-  gh api "repos/$owner/$RepoName/pages" -f "source[branch]=main" -f "source[path]=/"
+  Invoke-Gh api "repos/$owner/$RepoName/pages" -f "source[branch]=main" -f "source[path]=/" | Out-Null
 }
 
 Write-Host "Published: https://$owner.github.io/$RepoName/"
